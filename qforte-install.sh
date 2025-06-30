@@ -12,7 +12,7 @@ echo "Initializing Conda...\n"
 source "$(conda info --base)/etc/profile.d/conda.sh"
 
 #CREATE ENVIRONMENT
-echo "Creating Conda environment: $(QFORTE_CONDA_ENV)\n"
+echo "Creating Conda environment: $QFORTE_CONDA_ENV\n"
 conda create -n "$QFORTE_CONDA_ENV" -y python=3.8
 
 #INSTALL REQUIRED PACKAGES
