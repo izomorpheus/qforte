@@ -82,6 +82,9 @@ class Computer {
         const QubitOpPool& qopl,
         const std::vector<std::complex<double>>& mults);
 
+    /// scale all coefficients by val
+    void scale(std::complex<double> val);
+
     /// get the expectation value of the sum of many circuits directly
     /// (ie without simulated measurement)
     std::complex<double> direct_op_exp_val(const QubitOperator& qo);
@@ -146,6 +149,8 @@ class Computer {
     void set_state(std::vector<std::pair<QubitBasis, double_c>> state);
 
     void zero_state();
+
+    void hartree_fock(int nel);
 
     /// get timings
     std::vector<std::pair<std::string, double>> get_timings() { return timings_; }
