@@ -1,16 +1,42 @@
+from typing import overload, List
+
 class Gate:
     def target(self) -> int: ...
     def control(self) -> int: ...
     def gate_id(self) -> str: ...
     def sparse_matrix(self) -> SparseMatrix: ...
     def adjoint(self) -> Gate: ...
+    def param(self) -> complex: ...
     def str(self) -> str: ...
     def __str__(self) -> str: ...
     def __repr__(self) -> str: ...
 
+@overload
 def gate(gate_id: str, target: int) -> Gate: 
     '''Create a one-qubit gate without parameter.
-    gate_id can be "X", "Y", "Z", '''
+    gate_id can be "X", "Y", "Z", "H","V", "S", "T", "I", "Rzy"'''
+    ...
+
+@overload
+def gate(gate_id: str, target: int, param: complex) -> Gate:
+    '''Create a one-qubit gate with parameter.
+    gate_id can be "R", "Rx", "Ry", "Rz", "rU1"'''
+    ...
+
+@overload
+def gate(gate_id: str, target: int, control: int) -> Gate:
+    '''Create a two-qubit gate without parameter.
+    gate_id can be "CNOT", "cX", "aCNOT", "acX", "cY", "cZ", "cV", SWAP"'''
+    ...
+
+@overload
+def gate(gate_id: str, target: int, control: int, param: complex) -> Gate:
+    '''Create a two-qubit gate with parameter.
+    gate_id can be "A", "cR", "cRz", "rU2"'''
+    ...
+
+def control_gate(control: int, gate: Gate) -> Gate:
+    '''Create a control gate from a single qubit-gate'''
     ...
 
 class Circuit:
@@ -23,7 +49,7 @@ class Circuit:
     def add_circuit(self, circ: Circuit) -> None:
         '''add a Circuit'''
         ...
-    def gates(self) -> str:
+    def gates(self) -> List[Gate]:
         '''Return a list of Gates
         in this Circuit'''
         ...
@@ -41,7 +67,7 @@ class Circuit:
         and combine gates with the same target. Return the complex prefactor resulting
         from the combination.'''
         ...
-    def set_parameters(self, params: list) -> None:
+    def set_parameters(self, params: List[float]) -> None:
         '''Reset the parameters of all Rz gates in the circuit,
         based on a list of real numbers.'''
         ...
