@@ -2,7 +2,7 @@ import qforte as qf
 import numpy as np
 from qforte.helper.df_ham_helper import *
 from qforte.utils.exponentiate import exponentiate_pauli_string
-from qforte.adapters.qiskit_adapters import qforte_to_qiskit
+from qforte.adapters.qiskit_adapters import qforte_to_qiskit_V1, qforte_to_qiskit_V2
 
 ##############
 # INIT TIMER #
@@ -185,6 +185,23 @@ for i in range(N):
 
 print(fc2.str(print_complex=True))
 print(c)
+print(type(mol.hamiltonian))
 
-qiskit_trotter_circ = qforte_to_qiskit(trotter_circ, nqubits)
+#######################
+# QISKIT TESTING CODE #
+#######################
 
+# Convert the circuit to Qiskit format
+# Try both versions of the conversion
+try:
+    qiskit_trotter_circ_v1 = None
+    qiskit_trotter_circ_v2 = None
+    qiskit_trotter_circ_v1 = qforte_to_qiskit_V1(trotter_circ, nqubits)
+    qiskit_trotter_circ_v2 = qforte_to_qiskit_V2(trotter_circ, nqubits)
+except Exception as e:
+    print(f"Error converting circuit to Qiskit: {e}")
+
+if qiskit_trotter_circ_v1: print(qiskit_trotter_circ_v1.draw())
+if qiskit_trotter_circ_v2: print(qiskit_trotter_circ_v2.draw())
+
+# run the resulting circuit

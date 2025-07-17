@@ -110,18 +110,20 @@ def qforte_to_qiskit_V2(qforte_circuit: Circuit, nqubits: int) -> QuantumCircuit
         "Rz": qiskit_circuit.rz,
     }
 
-    gate_set_custom_unitary = {
+    gate_set_1qbit_custom = {
         "Rzy",
         "adj(Rzy)",
         "rU1",
-        "adj(rU1)",
+        "adj(rU1)"
+    }
+    gate_set_2qubit_custom = {
         "A",
         "adj(A)",
         "cR",
         "adj(cR)",
         "cRz",
         "adj(cRz)",
-        "rU2"
+        "rU2",
         "adj(rU2)"
     }
     #Iterate through the gates in the qForte circuit
@@ -138,11 +140,15 @@ def qforte_to_qiskit_V2(qforte_circuit: Circuit, nqubits: int) -> QuantumCircuit
 
         #1-qbit gate with parameter (uses parameter extracted from gate.param())
         elif gate.gate_id() in gate_map_1qbit_with_param:
-            gate_map_1qbit_with_param[gate.gate_id()](np.real(gate.param()), gate.target())
+            gate_map_1qbit_with_param[gate.gate_id()](gate.param().real, gate.target())
 
         #Custom unitary gates (Need to test if this transpiles correctly)
-        elif gate.gate_id() in gate_set_custom_unitary:
+
+        #1-qbit custom unitary gates
+        elif gate.gate_id() in gate_set_1qbit_custom:
             qiskit_circuit.append(UnitaryGate(np.array(gate.gate(), dtype=complex), label=gate.gate_id()), [gate.target()])
+        elif gate.gate_id() in gate_set_2qubit_custom:
+            qiskit_circuit.append(UnitaryGate(np.array(gate.gate(), dtype=complex), label=gate.gate_id()), [gate.control(), gate.target()])
         else:
             raise ValueError(f"Unsupported gate: {gate.gate_id()}")
         
