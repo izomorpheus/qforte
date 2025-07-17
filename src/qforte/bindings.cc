@@ -425,6 +425,7 @@ PYBIND11_MODULE(qforte, m) {
         .def("target", &Gate::target)
         .def("control", &Gate::control)
         .def("gate_id", &Gate::gate_id)
+        .def("gate", &Gate::gate)
         .def("sparse_matrix", &Gate::sparse_matrix)
         .def("adjoint", &Gate::adjoint)
         .def("param", &Gate::param)
