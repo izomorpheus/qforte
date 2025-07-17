@@ -3,10 +3,10 @@ from qforte import Circuit
 import qforte as qf
 import numpy as np
 
-def qforte_to_qiskit(qforte_circuit: Circuit) -> QuantumCircuit:
+def qforte_to_qiskit(qforte_circuit: Circuit, nqubits: int) -> QuantumCircuit:
     '''Takes a qForte circuit object and returns 
     an equivalent qiskit QuantumCircuit object'''
-    qiskit_circuit = QuantumCircuit()
+    qiskit_circuit = QuantumCircuit(nqubits)
     gates = qforte_circuit.gates()
 
     Rzy_mat = 1/np.sqrt(2) * np.array([[1j, 1], [1, 1j]])
@@ -20,7 +20,8 @@ def qforte_to_qiskit(qforte_circuit: Circuit) -> QuantumCircuit:
         "S": qiskit_circuit.s,
         "T": qiskit_circuit.t,
         "I": qiskit_circuit.id,
-        "Rzy": qiskit_circuit.unitary
+        "Rzy": qiskit_circuit.unitary,
+        "adj(Rzy)": qiskit_circuit.unitary
     }
 
     gate_map_2qbit = {
@@ -53,6 +54,8 @@ def qforte_to_qiskit(qforte_circuit: Circuit) -> QuantumCircuit:
             if gate.gate_id() in gate_map_1qbit:
                 if gate.gate_id() == "Rzy": #special case for Rzy
                     qiskit_circuit.unitary(Rzy_mat, [gate.target()], label=gate.gate_id())
+                elif gate.gate_id() == "adj(Rzy)":
+                    qiskit_circuit.unitary((Rzy_mat.conj().T), [gate.target()], label=gate.gate_id())
                 else:
                     gate_map_1qbit[gate.gate_id()](gate.target())
             elif gate.gate_id() in gate_map_1qbit_with_param:
@@ -60,7 +63,7 @@ def qforte_to_qiskit(qforte_circuit: Circuit) -> QuantumCircuit:
                     rU1_mat = np.array([[]]) #TODO
                     qiskit_circuit.unitary(rU1_mat, [gate.target()], label=gate.gate_id())
                 else:
-                    gate_map_1qbit_with_param[gate.gate_id()](gate.target(), gate.param())
+                    gate_map_1qbit_with_param[gate.gate_id()](np.real(gate.param()), gate.target())
             else:
                 raise ValueError(f"Unsupported one-qubit gate: {gate.gate_id()}")
         else:

@@ -2,6 +2,7 @@ import qforte as qf
 import numpy as np
 from qforte.helper.df_ham_helper import *
 from qforte.utils.exponentiate import exponentiate_pauli_string
+from qforte.adapters.qiskit_adapters import qforte_to_qiskit
 
 ##############
 # INIT TIMER #
@@ -184,3 +185,6 @@ for i in range(N):
 
 print(fc2.str(print_complex=True))
 print(c)
+
+qiskit_trotter_circ = qforte_to_qiskit(trotter_circ, nqubits)
+
