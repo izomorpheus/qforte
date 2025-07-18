@@ -3,6 +3,8 @@ import numpy as np
 from qforte.helper.df_ham_helper import *
 from qforte.utils.exponentiate import exponentiate_pauli_string
 from qforte.adapters.qiskit_adapters import qforte_to_qiskit_V1, qforte_to_qiskit_V2
+from qiskit.visualization import circuit_drawer
+from matplotlib import pyplot as plt
 
 ##############
 # INIT TIMER #
@@ -192,8 +194,8 @@ print(type(mol.hamiltonian))
 #######################
 
 # Convert the circuit to Qiskit format
-# Try both versions of the conversion
-try:
+
+try: # Try both versions of the conversion
     qiskit_trotter_circ_v1 = None
     qiskit_trotter_circ_v2 = None
     qiskit_trotter_circ_v1 = qforte_to_qiskit_V1(trotter_circ, nqubits)
@@ -201,7 +203,19 @@ try:
 except Exception as e:
     print(f"Error converting circuit to Qiskit: {e}")
 
-if qiskit_trotter_circ_v1: print(qiskit_trotter_circ_v1.draw())
+if qiskit_trotter_circ_v1:
+    print(qiskit_trotter_circ_v1.draw())
+    #draw circuit using matplotlib
+    circuit_drawer(qiskit_trotter_circ_v1, output='mpl')
+    plt.show()
 if qiskit_trotter_circ_v2: print(qiskit_trotter_circ_v2.draw())
 
 # run the resulting circuit
+
+import qiskit.qasm3
+
+qasm3_str = qiskit.qasm3.dumps(qiskit_trotter_circ_v1)
+
+# To save to a file:
+with open("circuit.qasm3", "w") as f:
+    f.write(qasm3_str)
