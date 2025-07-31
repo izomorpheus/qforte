@@ -21,5 +21,13 @@ def test_bell_state_conversion():
     circuit_drawer(qiskit_circ, output='mpl')
     plt.show()
 
+    import qiskit.qasm3
+
+    qasm3_str = qiskit.qasm3.dumps(qiskit_circ)
+
+    # To save to a file:
+    with open("circuit.qasm3", "w") as f:
+        f.write(qasm3_str)
+
 if __name__ == "__main__":
     test_bell_state_conversion()

@@ -9,7 +9,7 @@ def qforte_to_qiskit_V1(qforte_circuit: Circuit, nqubits: int) -> QuantumCircuit
     qiskit_circuit = QuantumCircuit(nqubits)
     gates = qforte_circuit.gates()
 
-    Rzy_mat = 1/np.sqrt(2) * np.array([[1j, 1], [1, 1j]])
+    # Rzy_mat = 1/np.sqrt(2) * np.array([[1j, 1], [1, 1j]])
 
     gate_map_1qbit = {
         "X": qiskit_circuit.x,
@@ -20,8 +20,10 @@ def qforte_to_qiskit_V1(qforte_circuit: Circuit, nqubits: int) -> QuantumCircuit
         "S": qiskit_circuit.s,
         "T": qiskit_circuit.t,
         "I": qiskit_circuit.id,
-        "Rzy": qiskit_circuit.unitary,
-        "adj(Rzy)": qiskit_circuit.unitary
+        # "Rzy": qiskit_circuit.unitary,
+        "Rzy": lambda target: qiskit_circuit.rx(np.pi/2, target),
+        "adj(Rzy)": lambda target: qiskit_circuit.rx(-np.pi/2, target),
+        # "adj(Rzy)": qiskit_circuit.unitary
     }
 
     gate_map_2qbit = {
@@ -52,14 +54,16 @@ def qforte_to_qiskit_V1(qforte_circuit: Circuit, nqubits: int) -> QuantumCircuit
     for gate in gates:
         if gate.target() == gate.control():
             if gate.gate_id() in gate_map_1qbit:
-                if gate.gate_id() == "Rzy": #special case for Rzy
-                    qiskit_circuit.unitary(Rzy_mat, [gate.target()], label=gate.gate_id())
-                elif gate.gate_id() == "adj(Rzy)":
-                    qiskit_circuit.unitary((Rzy_mat.conj().T), [gate.target()], label=gate.gate_id())
-                else:
-                    gate_map_1qbit[gate.gate_id()](gate.target())
+                gate_map_1qbit[gate.gate_id()](gate.target())
+                # if gate.gate_id() == "Rzy": #special case for Rzy
+                #     qiskit_circuit.unitary(Rzy_mat, [gate.target()], label=gate.gate_id())
+                # elif gate.gate_id() == "adj(Rzy)":
+                #     qiskit_circuit.unitary((Rzy_mat.conj().T), [gate.target()], label=gate.gate_id())
+                # else:
+                #     gate_map_1qbit[gate.gate_id()](gate.target())
             elif gate.gate_id() in gate_map_1qbit_with_param:
                 if gate.gate_id() == "rU1": #special case for rU1
+                    print("RU1 GATE!!!")
                     rU1_mat = np.array([[]]) #TODO
                     qiskit_circuit.unitary(rU1_mat, [gate.target()], label=gate.gate_id())
                 else:
