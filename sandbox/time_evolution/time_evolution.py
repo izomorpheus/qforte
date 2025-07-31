@@ -1,4 +1,5 @@
 import qforte as qf
+import qiskit.qasm3
 import numpy as np
 from qforte.helper.df_ham_helper import *
 from qforte.utils.exponentiate import exponentiate_pauli_string
@@ -94,6 +95,11 @@ hermitian_pairs.add_hermitian_pairs(1.0, sqham)
 
 # Initialize a circuit to hold the pauli strings and a float to hold the global phase
 trotter_circ = qf.Circuit()
+
+# FOR INITIALIZING TO HARTREE FOCK STATE (NOT NEEDED WITH COMPUTER)
+#for i in range(nel):
+#    trotter_circ.add_gate(qf.gate('X', i))  
+
 trotter_phase = 1.0
 gphase2 = np.exp((-1.0j*dt)*hermitian_pairs.terms()[0][1].terms()[0][0]*2)
 for pair in hermitian_pairs.terms():
@@ -144,7 +150,7 @@ fc2.hartree_fock()
 #######################
 print(f"trotter phase: {trotter_phase}, global phase: {gphase}, global phase2: {gphase2}")
 #for each time step
-for i in range(N):
+for i in range(1):
 
     #do time evolution on the fock computer
     c.apply_circuit(trotter_circ)
@@ -186,7 +192,8 @@ for i in range(N):
     print(f"t {(i+1)*dt:6.6f} |dC2| {dC2.norm():6.6f} {E1:6.6f} {E2:6.6f} {E3:6.6f}")
 
 print(fc2.str(print_complex=True))
-print(c)
+#print(c)
+print(c.get_coeff_vec())
 print(type(mol.hamiltonian))
 
 #######################
@@ -206,13 +213,12 @@ except Exception as e:
 if qiskit_trotter_circ_v1:
     print(qiskit_trotter_circ_v1.draw())
     #draw circuit using matplotlib
-    circuit_drawer(qiskit_trotter_circ_v1, output='mpl')
-    plt.show()
+    #circuit_drawer(qiskit_trotter_circ_v1, output='mpl')
+    #plt.show()
 if qiskit_trotter_circ_v2: print(qiskit_trotter_circ_v2.draw())
 
 # run the resulting circuit
 
-import qiskit.qasm3
 
 qasm3_str = qiskit.qasm3.dumps(qiskit_trotter_circ_v1)
 

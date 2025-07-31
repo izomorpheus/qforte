@@ -110,11 +110,21 @@ Gate make_gate(std::string type, size_t target, size_t control, std::complex<dou
             std::complex<double> c = 1.0 / std::sqrt(2.0);
             std::complex<double> c_i = onei / std::sqrt(2.0);
             std::complex<double> gate[4][4]{
-                {+c_i, +c},
-                {+c, +c_i},
+                {+c, -c_i},
+                {-c_i, +c},
             };
             return Gate(type, target, control, gate);
-        } if (type == "rU1") {
+        }
+//        if (type == "Rzy") {
+//            std::complex<double> c = 1.0 / std::sqrt(2.0);
+//            std::complex<double> c_i = onei / std::sqrt(2.0);
+//            std::complex<double> gate[4][4]{
+//                {+c_i, +c},
+//                {+c, +c_i},
+//            };
+//            return Gate(type, target, control, gate);
+//            } 
+        if (type == "rU1") {
             std::complex<double> a = std::cos(parameter);
             std::complex<double> b = std::sin(parameter);
             std::complex<double> gate[4][4]{
