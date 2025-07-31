@@ -13,14 +13,11 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 
 #CREATE ENVIRONMENT
 echo "Creating Conda environment: $QFORTE_CONDA_ENV\n"
-conda create -n "$QFORTE_CONDA_ENV" -y python=3.8
+conda create -n "$QFORTE_CONDA_ENV" -y python=3.9
 
 #INSTALL REQUIRED PACKAGES
 echo "Installing Conda packages...\n"
-conda install -n "$QFORTE_CONDA_ENV" -y -c conda-forge psi4 cmake openblas libopenblas pytest
-
-#TODO: ADD AN OPTION TO INSTALL CUDA
-#conda install -n $QFORTE_CONDA_ENV -c nvidia cuda
+conda install -n "$QFORTE_CONDA_ENV" -y -c conda-forge openblas psi4 cmake pytest
 
 #ACTIVATE CONDA ENV
 echo "Activating Conda environment...\n"

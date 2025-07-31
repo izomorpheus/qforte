@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#which micromamba > /dev/null 2>&1 || { echo "conda not found..exiting"; exit 1;}
+which conda > /dev/null 2>&1 || { echo "conda not found..exiting"; exit 1;}
 
 if [ $# -gt 0 ]; then
     QFORTE_CONDA_ENV=$1
@@ -8,12 +8,10 @@ else
     QFORTE_CONDA_ENV="qforte-default-env"
 fi
 
-echo "Initializing Conda...\n"
-
 #ACTIVATE CONDA ENV
-echo "Activating Conda environment...\n"
-eval "$(micromamba shell hook -s bash)"
-micromamba activate $QFORTE_CONDA_ENV
+echo "Initializing Conda...\n"
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate $QFORTE_CONDA_ENV
 
 #SET THE CMAKE PREFIX TO THE CONDA PREFIX
 echo "Setting CMAKE_PREFIX_PATH...\n"
