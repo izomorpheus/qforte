@@ -1,9 +1,22 @@
 #!/bin/bash
 
+# This is the development build script for qForte.
+# It rebuilds and installs qForte.
+
+# This script requires conda to be available in the PATH.
+
+# This script accepts one (optional) positional parameter.
+# It specifies the conda environment to build against.
+# If not provided, will fall back to the currently active environment.
+# If no environment is active, will fall back to "qforte-default-env".
+
+#check for conda
 which conda > /dev/null 2>&1 || { echo "conda not found..exiting"; exit 1;}
 
 if [ $# -gt 0 ]; then
     QFORTE_CONDA_ENV=$1
+elif [ -n "$CONDA_DEFAULT_ENV" ]; then
+    QFORTE_CONDA_ENV="$CONDA_DEFAULT_ENV"
 else
     QFORTE_CONDA_ENV="qforte-default-env"
 fi

@@ -5,7 +5,7 @@ from qforte.helper.df_ham_helper import *
 from qforte.utils.exponentiate import exponentiate_pauli_string
 from qforte.adapters.qiskit_adapters import qforte_to_qiskit_V1, qforte_to_qiskit_V2
 from qiskit.visualization import circuit_drawer
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 
 ##############
 # INIT TIMER #
