@@ -30,7 +30,7 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 
 #CREATE CONDA ENV
 echo "Creating Conda environment: $QFORTE_CONDA_ENV\n"
-conda create -n "$QFORTE_CONDA_ENV" -y -c conda-forge python=3.8 openblas psi4 cmake pytest
+conda create -n "$QFORTE_CONDA_ENV" -y -c conda-forge python=3.8 openblas psi4 cmake pytest || exit 1
 
 #ACTIVATE CONDA ENV
 echo "Activating Conda environment..."
