@@ -14,6 +14,14 @@
 #   It specifies the name of the conda environment that will be created.
 #   If it is not passed, the name defaults to "qforte-default-env".
 
+#EXIT ON ERROR
+set -euo pipefail
+
+#RUN FROM PROJECT ROOT
+SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
+PROJECT_ROOT=$(CDPATH= cd "$SCRIPT_DIR/.." && pwd)
+cd "$PROJECT_ROOT" || exit 1
+
 #ACCEPT ARGUMENTS
 if [ $# -gt 0 ]; then
     QFORTE_CONDA_ENV=$1

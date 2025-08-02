@@ -10,6 +10,14 @@
 # If not provided, will fall back to the currently active environment.
 # If no environment is active, will fall back to "qforte-default-env".
 
+#EXIT ON ERROR
+set -euo pipefail
+
+#RUN FROM PROJECT ROOT
+SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
+PROJECT_ROOT=$(CDPATH= cd "$SCRIPT_DIR/.." && pwd)
+cd "$PROJECT_ROOT" || exit 1
+
 #check for conda
 which conda > /dev/null 2>&1 || { echo "conda not found..exiting"; exit 1;}
 
