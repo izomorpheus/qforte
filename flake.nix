@@ -1,6 +1,5 @@
-# flake-qiskit.nix
 {
-  description = "qforte (Qiskit): dev shell + build-and-exit";
+  description = "qForte Nix flake";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -13,7 +12,7 @@
     let
       pkgs = import nixpkgs { inherit system; };
 
-      projectRoot = toString ../..;
+      projectRoot = toString ./.;
 
       fhs = pkgs.buildFHSEnv {
 
@@ -30,7 +29,7 @@
         profile = ''
           set -e
 
-          export MAMBA_ROOT_PREFIX="$PWD/.mamba"
+          export MAMBA_ROOT_PREFIX="$HOME/.local/share/mamba"
 
           if [ "$0" = zsh ]; then
             eval "$(micromamba shell hook --shell=zsh)"
@@ -54,16 +53,16 @@
       ## 1) Interactive dev shell
       devShells.default = pkgs.mkShell {
         shellHook  = ''
-          starting qforte dev shell...
+          echo "starting qforte dev shell..."
           exec ${fhs.out}/bin/qforte
         '';
       };
 
       devShells.build = pkgs.mkShell {
         shellHook  = ''
-          echo building and installing qforte...
-          cd ${projectRoot} || exit 1
+          echo "building and installing qforte..."
           exec ${fhs.out}/bin/qforte ./scripts/sh/build-mamba.sh
+          exit $?
         '';
       };
 
