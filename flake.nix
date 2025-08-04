@@ -12,61 +12,185 @@
     let
       pkgs = import nixpkgs { inherit system; };
 
-      projectRoot = toString ./.;
+      packages = with pkgs; [
 
-      fhs = pkgs.buildFHSEnv {
+        gcc
+        gdb
+        lldb
+        cmake
+        clang
+        clang-tools
+        clang-analyzer
+        clang-manpages
+        python312Full
+        python312Packages.pip
+        python312Packages.virtualenv
+        python312Packages.debugpy
+        pyright
+        micromamba
 
-        name = "qforte";
+        git
+        tree
+        tmux
+        htop
+        curl
+
+        gh
+        eza
+        bat
+        btop
+        wget
+
+        vim
+        neovim
+        neofetch
+        starship
+        ripgrep
+
+        wl-clipboard
+        xclip
+
+      ];
+
+      mambaRootPrefix = "$HOME/.local/share/mamba";
+
+      defaultMambaEnv = "qforte-default-env";
+      qiskitMambaEnv = "qforte-qiskit-env";
+
+      defaultPythonVer = "python=3.8";
+      qiskitPythonVer = "python=3.10";
+
+      defaultPythonPkgs = pkgs.lib.concatStringsSep " " [
+        "openblas"
+        "psi4"
+        "cmake"
+        "pytest"
+      ];
+
+      qiskitPythonPkgs = pkgs.lib.concatStringsSep " " [
+        "qiskit"
+        "qiskit-ibm-runtime"
+        "qiskit-aer"
+      ];
+
+      fhsDev = { mambaEnv ? defaultMambaEnv, pythonVer ? defaultPythonVer, pythonPkgs ? defaultPythonPkgs }:
+        pkgs.buildFHSEnv {
+
+        name = "qforte-dev";
 
         targetPkgs = pkgs: with pkgs; [
           micromamba
           gnumake
           gcc
+
+          zsh
+          zsh-completions
+          zsh-syntax-highlighting
+          zsh-autosuggestions
         ];
 
-        runScript = "bash --login";
+        runScript = "zsh --login";
 
         profile = ''
           set -e
 
-          export MAMBA_ROOT_PREFIX="$HOME/.local/share/mamba"
+          echo 'eval "$(micromamba shell hook --shell=zsh)"' > /etc/zprofile
+          echo 'eval "$(starship init zsh)"' >> /etc/zprofile
+          echo 'source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh' >> /etc/zprofile
+          echo 'source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh' >> /etc/zprofile
 
-          if [ "$0" = zsh ]; then
-            eval "$(micromamba shell hook --shell=zsh)"
-          elif [ "$0" = bash ]; then
+          if [ "$0" = bash ]; then
             eval "$(micromamba shell hook --shell=bash)"
           else
             eval "$(micromamba shell hook --shell=posix)"
           fi
 
-          if [ ! -d "$MAMBA_ROOT_PREFIX/envs/qforte-default-env" ]; then
-            micromamba create -n qforte-default-env -y -c conda-forge python=3.8 openblas psi4 cmake pytest
+          export MAMBA_ROOT_PREFIX="${mambaRootPrefix}"
+  
+          if [ ! -d "$MAMBA_ROOT_PREFIX/envs/${mambaEnv}" ]; then
+            micromamba create -n ${mambaEnv} -y -c conda-forge ${pythonVer} ${pythonPkgs}
           fi
 
-          micromamba activate qforte-default-env
+          micromamba activate ${mambaEnv}
 
           set +e
         '';
+
       };
 
-    in {
-      ## 1) Interactive dev shell
-      devShells.default = pkgs.mkShell {
+      fhsBuild = { mambaEnv ? defaultMambaEnv, pythonVer ? defaultPythonVer, pythonPkgs ? defaultPythonPkgs }:
+
+        pkgs.buildFHSEnv {
+
+          name = "qforte-build";
+
+          targetPkgs = pkgs: with pkgs; [
+            micromamba
+            gnumake
+            gcc
+          ];
+
+          runScript = ''
+
+            eval "$(micromamba shell hook --shell=posix)"
+            export MAMBA_ROOT_PREFIX="${mambaRootPrefix}"
+
+            if [ ! -d "$MAMBA_ROOT_PREFIX/envs/${mambaEnv}" ]; then
+              micromamba create -n "${mambaEnv}" -y -c conda-forge ${pythonVer} ${pythonPkgs}
+            fi
+
+            micromamba activate "${mambaEnv}"
+            ./scripts/sh/build-mamba.sh
+
+          '';
+
+        };
+
+    in rec {
+
+      devShells.shell-default = pkgs.mkShell {
+
         shellHook  = ''
           echo "starting qforte dev shell..."
-          exec ${fhs.out}/bin/qforte
+          exec ${(fhsDev {}).out}/bin/qforte-dev;
         '';
+        inherit packages;
+
       };
 
-      devShells.build = pkgs.mkShell {
+      devShells.shell-qiskit = pkgs.mkShell {
+
+        shellHook  = ''
+          echo "starting qforte dev shell..."
+          exec ${(fhsDev {mambaEnv = qiskitMambaEnv; pythonVer = qiskitPythonVer; pythonPkgs = defaultPythonPkgs + " " + qiskitPythonPkgs;}).out}/bin/qforte-dev;
+        '';
+
+        inherit packages;
+
+      };
+
+      devShells.build-default = pkgs.mkShell {
+
         shellHook  = ''
           echo "building and installing qforte..."
-          exec ${fhs.out}/bin/qforte -c '
-          echo DOINGIT!! && ./scripts/sh/build-mamba.sh; echo DONE!!!!; exit; exit'
-          exit
+          exec ${(fhsBuild {}).out}/bin/qforte-build
         '';
+
       };
 
-    });
+      devShells.build-qiskit = pkgs.mkShell {
+        
+        shellHook  = ''
+          echo "building and installing qforte..."
+          exec ${(fhsBuild {mambaEnv = qiskitMambaEnv; pythonVer = qiskitPythonVer; pythonPkgs = defaultPythonPkgs + " " + qiskitPythonPkgs;}).out}/bin/qforte-build;
+        '';
+
+      };
+
+      devShells.default = devShells.shell-qiskit;
+      devShells.build = devShells.build-qiskit;
+
+    }
+  );
 }
 
