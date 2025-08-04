@@ -90,6 +90,8 @@ pkgs.mkShell {
   shellHook = ''
     set -e
     cd ${projectRoot} || exit 1
+    ln -sf scripts/sh/build-mamba.sh build.sh
+    ln -sf scripts/nix/shell-qiskit.nix shell.nix
     echo "launching FHS dev shell in $(pwd) …"
     exec ${fhs.out}/bin/qforte-qiskit
   '';

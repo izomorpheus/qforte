@@ -88,7 +88,9 @@ pkgs.mkShell {
 
   shellHook = ''
     cd ${projectRoot} || exit 1
-    echo "launching dev shell…"
+    ln -sf scripts/nix/shell-default.nix shell.nix
+    ln -sf scripts/sh/build-mamba.sh build.sh
+    echo "launching FHS dev shell in $(pwd) …"
     exec ${fhs.out}/bin/qforte-default
   '';
 }

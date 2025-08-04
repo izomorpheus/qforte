@@ -13,8 +13,15 @@
 #EXIT ON ERROR
 set -euo pipefail
 
+#FIND THE PROJECT ROOT
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+  SOURCE="$(readlink -f "$SOURCE")"
+done
+SCRIPT_DIR="$(cd "$(dirname "$SOURCE")" && pwd)"
+
 #RUN FROM PROJECT ROOT
-SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
+#SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
 PROJECT_ROOT=$(CDPATH= cd "$SCRIPT_DIR/../.." && pwd)
 cd "$PROJECT_ROOT" || exit 1
 
