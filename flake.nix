@@ -94,13 +94,11 @@
         profile = ''
           set -e
 
-          echo 'eval "$(micromamba shell hook --shell=zsh)"' > /etc/zprofile
-          echo 'eval "$(starship init zsh)"' >> /etc/zprofile
-          echo 'source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh' >> /etc/zprofile
-          echo 'source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh' >> /etc/zprofile
-
           if [ "$0" = bash ]; then
             eval "$(micromamba shell hook --shell=bash)"
+          elif [ "$0" = zsh ]; then
+            echo ZSH
+            eval "$(micromamba shell hook --shell=zsh)"
           else
             eval "$(micromamba shell hook --shell=posix)"
           fi
