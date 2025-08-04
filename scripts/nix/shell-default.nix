@@ -1,7 +1,7 @@
 { pkgs ? import <nixpkgs> {} }:
 let
   fhs = pkgs.buildFHSEnv {
-    name = "qforte";
+    name = "qforte-default";
     targetPkgs = pkgs: with pkgs; [
       micromamba
       gnumake
@@ -19,6 +19,7 @@ let
         eval "$(micromamba shell hook --shell=zsh)"
       elif [ "$0" = bash ]; then
         eval "$(micromamba shell hook --shell=bash)"
+        eval "$(starship init bash)"
       else
         eval "$(micromamba shell hook --shell=posix)"
       fi
@@ -33,4 +34,61 @@ let
     '';
   };
 
-in fhs.env
+  projectRoot = toString ../..;
+
+in
+
+pkgs.mkShell {
+  name = "qforte-default-shell";
+
+  packages = with pkgs; [
+    # TTY core
+    vim
+    tree
+    eza
+    bat
+    dust
+    btop
+    neofetch
+
+    gcc
+    gdb
+    lldb
+    cmake
+    clang
+    clang-tools
+    clang-analyzer
+    clang-manpages
+
+    pyright
+
+    htop
+    tmux
+    git
+
+    gh
+    which
+
+    zip
+    unzip
+    p7zip
+    killall
+    ripgrep
+    wget
+
+
+    neovim
+    starship
+
+    zsh
+    zsh-completions
+    zsh-syntax-highlighting
+    zsh-autosuggestions
+  ];
+
+  shellHook = ''
+    cd ${projectRoot} || exit 1
+    echo "launching dev shell…"
+    exec ${fhs.out}/bin/qforte-default
+  '';
+}

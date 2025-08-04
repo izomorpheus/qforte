@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# This is the development build script for qForte.
+# It rebuilds and installs qForte.
+
+# This script requires conda to be available in the PATH.
+
+# This script accepts one (optional) positional parameter.
+# It specifies the conda environment to build against.
+# If not provided, will fall back to the currently active environment.
+# If no environment is active, will fall back to "qforte-default-env".
+
 #EXIT ON ERROR
 set -euo pipefail
 
@@ -8,22 +18,21 @@ SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
 PROJECT_ROOT=$(CDPATH= cd "$SCRIPT_DIR/../.." && pwd)
 cd "$PROJECT_ROOT" || exit 1
 
-#ACCEPT ARGUMENTS
+#check for conda
+which conda > /dev/null 2>&1 || { echo "conda not found..exiting"; exit 1;}
+
 if [ $# -gt 0 ]; then
     QFORTE_CONDA_ENV=$1
+elif [ -n "$CONDA_DEFAULT_ENV" ]; then
+    QFORTE_CONDA_ENV="$CONDA_DEFAULT_ENV"
 else
     QFORTE_CONDA_ENV="qforte-default-env"
 fi
 
-#which micromamba > /dev/null 2>&1 || { echo "conda not found..exiting"; exit 1;}
-
-#INITIALIZE MAMBA
-echo "Initializing Mamba...\n"
-eval "$(micromamba shell hook -s bash)"
-
 #ACTIVATE CONDA ENV
-echo "Activating Mamba environment...\n"
-micromamba activate $QFORTE_CONDA_ENV
+echo "Initializing Conda...\n"
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate $QFORTE_CONDA_ENV
 
 #SET THE CMAKE PREFIX TO THE CONDA PREFIX
 echo "Setting CMAKE_PREFIX_PATH...\n"
