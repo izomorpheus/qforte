@@ -61,8 +61,9 @@
       devShells.build = pkgs.mkShell {
         shellHook  = ''
           echo "building and installing qforte..."
-          exec ${fhs.out}/bin/qforte ./scripts/sh/build-mamba.sh
-          exit $?
+          exec ${fhs.out}/bin/qforte -c '
+          echo DOINGIT!! && ./scripts/sh/build-mamba.sh; echo DONE!!!!; exit; exit'
+          exit
         '';
       };
 
