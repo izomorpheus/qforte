@@ -1,5 +1,5 @@
 {
-  description = "qForte Nix flake";
+  description = "qForte Statevector Simulator";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
