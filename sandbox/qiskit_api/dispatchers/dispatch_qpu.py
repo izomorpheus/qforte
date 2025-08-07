@@ -1,39 +1,44 @@
-# QPU dispatcher using Qiskit Runtime SamplerV2 and EstimatorV2
-from qiskit_ibm_runtime import QiskitRuntimeService
+from qiskit_ibm_runtime import QiskitRuntimeService, Sampler, Estimator
+from qiskit import transpile
 
 class QPUDispatcher:
-    def __init__(self, circuit, backend_name, service=None):
-        self.circuit = circuit
+    def __init__(self, backend_name=None):
         self.backend_name = backend_name
-        self.service = service or QiskitRuntimeService()
-        self.job_options = {}
+        self.service = QiskitRuntimeService()
+        self.backend = self.service.least_busy() if not backend_name else self.service.backend(backend_name)
         self.sampler = None
         self.estimator = None
 
-    def configure_job(self, shots: int = 1024, **options):
-        """Configure job-level options such as number of shots and runtime options."""
-        self.job_options = {'shots': shots, **options}
+    def set_backend_from_name(self):
+        try:
+            self.backend = self.service.backend(self.backend_name) if self.backend_name else self.service.least_busy()
+        except Exception as e:
+            raise ValueError(f"Could not set backend: {e}")
 
-    def configure_sampler(self):
-        """Instantiate the Sampler primitive for the QPU backend using the runtime service."""
-        # service.sampler is dynamically added at runtime
-        self.sampler = self.service.sampler(backend=self.backend_name)  # type: ignore
+    def get_backend(self):
+        return self.backend
 
-    def dispatch_sampler(self):
-        """Run the circuit on the QPU sampler and return the results."""
-        if self.sampler is None:
-            self.configure_sampler()
-        # run takes circuits list and named options
-        job = self.sampler.run([self.circuit], **self.job_options)  # type: ignore
+    def set_backend(self, backend_name=None):
+        self.backend_name = backend_name
+        self.set_backend_from_name()
+
+    def dispatch_sampler(self, circuits, shots=None):
+        # Ensure backend is initialized
+        if self.backend is None:
+            self.set_backend_from_name()
+        # Transpile to match hardware connectivity
+        transpiled = transpile(circuits, backend=self.backend)
+        # Instantiate and run sampler
+        self.sampler = Sampler(mode=self.backend)
+        job = self.sampler.run(transpiled, shots=shots)
         return job.result()
 
-    def configure_estimator(self):
-        """Instantiate the Estimator primitive for the QPU backend using the runtime service."""
-        self.estimator = self.service.estimator(backend=self.backend_name)  # type: ignore
-
-    def dispatch_estimator(self, observables):
-        """Run the circuit on the QPU estimator with given observables and return the results."""
+    def dispatch_estimator(self, circuits, observables, precision=None):
+        if self.backend is None:
+            self.set_backend_from_name()
+        transpiled = transpile(circuits, backend=self.backend)
+        pubs = zip(circuits, observables)
         if self.estimator is None:
-            self.configure_estimator()
-        job = self.estimator.run([self.circuit], [observables], **self.job_options)  # type: ignore
+            self.estimator = Estimator(mode=self.backend)
+        job = self.estimator.run(pubs, precision)  # type: ignore
         return job.result()
