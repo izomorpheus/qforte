@@ -46,14 +46,12 @@ def main():
         print(count)
 
     #plot the qpu results
-    plot1 = plt.hist(qpu_counts.values(), bins=len(qpu_counts), alpha=0.5, label='QPU Single Qubit Circuit')
-    plot2 = plt.hist(aer_counts.values(), bins=len(aer_counts), alpha=0.5, label='QPU Single Qubit Circuit')
-    # plot_histogram(qpu_counts, title="Single Qubit Circuit Counts")
-    # plot_histogram(qpu_counts_bell, title="Bell State Circuit Counts")
+    plot_histogram(qpu_counts, title="Single Qubit Circuit Counts")
+    plot_histogram(qpu_counts_bell, title="Bell State Circuit Counts")
 
-    # #plot the aer results
-    # plot_histogram(aer_counts, title="Aer Single Qubit Circuit Counts")
-    # plot_histogram(aer_counts_bell, title="Aer Bell State Circuit Counts")
+     #plot the aer results
+    plot_histogram(aer_counts, title="Aer Single Qubit Circuit Counts")
+    plot_histogram(aer_counts_bell, title="Aer Bell State Circuit Counts")
     plt.show()
 
 if __name__ == "__main__":
