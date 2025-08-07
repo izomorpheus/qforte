@@ -14,20 +14,8 @@
 
       packages = with pkgs; [
 
-        gcc
-        gdb
-        lldb
-        cmake
-        clang
         clang-tools
-        clang-analyzer
-        clang-manpages
-        python312Full
-        python312Packages.pip
-        python312Packages.virtualenv
-        python312Packages.debugpy
         pyright
-        micromamba
 
         git
         tree
@@ -83,6 +71,8 @@
           gnumake
           gcc
 
+          bash
+
           zsh
           zsh-completions
           zsh-syntax-highlighting
@@ -94,11 +84,10 @@
         profile = ''
           set -e
 
-          if [ "$0" = bash ]; then
-            eval "$(micromamba shell hook --shell=bash)"
-          elif [ "$0" = zsh ]; then
-            echo ZSH
+          if [ "$0" = zsh ]; then
             eval "$(micromamba shell hook --shell=zsh)"
+          elif [ "$0" = bash ]; then
+            eval "$(micromamba shell hook --shell=bash)"
           else
             eval "$(micromamba shell hook --shell=posix)"
           fi
