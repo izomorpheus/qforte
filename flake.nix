@@ -61,6 +61,18 @@
         "qiskit-aer"
       ];
 
+      extraPythonPkgs = pkgs.lib.concatStringsSep " " [
+        "matplotlib"
+        "pandas"
+        "sympy"
+      ];
+
+      allPythonPkgs = pkgs.lib.concatStringsSep " " [
+        defaultPythonPkgs
+        qiskitPythonPkgs
+        extraPythonPkgs
+      ];
+
       fhsDev = { mambaEnv ? defaultMambaEnv, pythonVer ? defaultPythonVer, pythonPkgs ? defaultPythonPkgs }:
         pkgs.buildFHSEnv {
 
@@ -149,7 +161,7 @@
 
         shellHook  = ''
           echo "starting qforte dev shell..."
-          exec ${(fhsDev {mambaEnv = qiskitMambaEnv; pythonVer = qiskitPythonVer; pythonPkgs = defaultPythonPkgs + " " + qiskitPythonPkgs;}).out}/bin/qforte-dev;
+          exec ${(fhsDev {mambaEnv = qiskitMambaEnv; pythonVer = qiskitPythonVer; pythonPkgs = allPythonPkgs;}).out}/bin/qforte-dev;
         '';
 
         inherit packages;
@@ -169,7 +181,7 @@
         
         shellHook  = ''
           echo "building and installing qforte..."
-          exec ${(fhsBuild {mambaEnv = qiskitMambaEnv; pythonVer = qiskitPythonVer; pythonPkgs = defaultPythonPkgs + " " + qiskitPythonPkgs;}).out}/bin/qforte-build;
+          exec ${(fhsBuild {mambaEnv = qiskitMambaEnv; pythonVer = qiskitPythonVer; pythonPkgs = allPythonPkgs;}).out}/bin/qforte-build;
         '';
 
       };
