@@ -3,7 +3,7 @@ from qforte import Circuit
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import UnitaryGate
 
-def qforte_to_qiskit_V1(qforte_circuit: Circuit, nqubits: int) -> QuantumCircuit:
+def qforte_to_qiskit(qforte_circuit: Circuit, nqubits: int) -> QuantumCircuit:
     '''Takes a qForte circuit object and returns 
     an equivalent qiskit QuantumCircuit object'''
     qiskit_circuit = QuantumCircuit(nqubits)
@@ -158,3 +158,6 @@ def qforte_to_qiskit_V2(qforte_circuit: Circuit, nqubits: int) -> QuantumCircuit
         
     #Return the constructed Qiskit circuit
     return qiskit_circuit
+
+def qiskit_to_qforte():
+    pass
