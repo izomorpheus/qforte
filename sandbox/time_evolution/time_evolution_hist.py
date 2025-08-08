@@ -2,7 +2,7 @@ from qforte.qiskit_api.workflows import readQASM, writeQASM
 from qforte.qiskit_api.dispatchers import QpuDispatcher, AerDispatcher, Dispatcher
 from qiskit_aer import StatevectorSimulator
 from qiskit.visualization import plot_histogram
-from qiskit_ibm_runtime.fake_provider import FakeBrisbane
+from qiskit_ibm_runtime.fake_provider import FakeBrisbane, FakeTorino
 from matplotlib import pyplot as plt
 import numpy as np
 import os
@@ -34,10 +34,10 @@ def hist(circuit=None, shots=None, computer=None):
     qc.measure_all()
 
     # Create dispatchers for QPU and Aer
-    qpu_dispatcher = QpuDispatcher("ibm_brisbane")
+    qpu_dispatcher = QpuDispatcher("ibm_torino")
     aer_dispatcher = AerDispatcher()
     # aer_statevector_simulator = Dispatcher(StatevectorSimulator())
-    fake_dispatcher = Dispatcher(FakeBrisbane())
+    fake_dispatcher = Dispatcher(FakeTorino())
 
 
     # Dispatch the circuits using QPU (cached)
@@ -70,30 +70,32 @@ def hist(circuit=None, shots=None, computer=None):
     # plot_histogram(aer_statevector_counts, title="Aer Statevector Single Qubit Circuit Counts")
 
     # plot_histogram(fake_sherbrooke_counts, title="Fake Sherbrooke Single Qubit Circuit Counts")
-    q_legend = ['QPU', 'Aer Simulator', 'Fake Brisbane']
-    q_dists = [qpu_counts, aer_counts, fake_brisbane_counts]
+    q_legend = ['IBM Heron r1', 'Simulated IBM Heron r1', 'Aer Simulator']
+    q_dists = [qpu_counts, fake_brisbane_counts, aer_counts]
 
     if computer:
         coeffs = computer.get_coeff_vec()
         probs = np.abs(coeffs) ** 2
-        probs = [float(p) for p in probs]
+        probs = [int(np.round(p)) for p in probs]
         n = int(np.log2(len(probs)))
         bitstrings = [format(i, f'0{n}b') for i in range(len(probs))]
         amp_probs = dict(zip(bitstrings, probs))
         c_legend = ['QForte Simulator']
         c_dist = [amp_probs]
-        legend = c_legend + q_legend
-        dists = c_dist + q_dists
+        legend = q_legend + c_legend
+        dists = q_dists + c_dist
         print(dists)
     else:
-        legend = q_legend
-        dists = q_dists
+        legend = legend
+        dists = dists
 
 
-    print("HERE!")
-    ax = plot_histogram(q_dists,
-                       title="Trotterized Time Evolution: H2",
-                       legend=q_legend)
-    print("THERE!")
+    ax = plot_histogram(dists,
+                       title=r'Trotterized Time Evolution: $H_2 \to \hat{H} \to \prod_j\;  e^{-i H_j t}$',
+                       legend=legend,
+                       figsize=(10, 6),
+                       bar_labels=False)
+    plt.savefig("trotter_hist.png", dpi=300, bbox_inches='tight')
     plt.show()
+    return dists
 

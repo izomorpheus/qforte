@@ -46,9 +46,9 @@ timer.record('Run Psi4 and Initialize')
 # INIT TIME EVOLUTION #
 #######################
 
-dt = 0.1  #time step
+dt = 0.5  #time step
 N = 10    #num of steps
-r = 2     #trotter number
+r = 1     #trotter number
 order = 1 #trotter order
 
 ref = mol.hf_reference   #hartree fock reference state
@@ -196,46 +196,4 @@ qasm3_str = qiskit.qasm3.dumps(qiskit_trotter_circ)
 with open("circuit.qasm3", "w") as f:
     f.write(qasm3_str)
 
-hist(qiskit_trotter_circ, shots=5000, computer=c)
-print("HERE!")
-# if qiskit_trotter_circ:
-#     print(qiskit_trotter_circ.draw())
-    #draw circuit using matplotlib
-    #circuit_drawer(qiskit_trotter_circ_v1, output='mpl')
-    #plt.show()
-
-# from qiskit.quantum_info import Statevector
-# state = Statevector.from_instruction(qiskit_trotter_circ)
-# print(state.probabilities_dict())
-
-# import numpy as np
-# from qforte.qiskit_api.dispatchers import QpuDispatcher
-# from qiskit.visualization import plot_histogram
-# import matplotlib.pyplot as plt
-
-# # … your existing code, ending with:
-# # state = Statevector.from_instruction(qiskit_trotter_circ)
-# # print(state.probabilities_dict())
-
-# # 1) Build theoretical distribution from qForte amplitudes
-# coeffs = c.get_coeff_vec()
-# probs = np.abs(coeffs) ** 2
-# n = int(np.log2(len(probs)))
-# bitstrings = [format(i, f'0{n}b') for i in range(len(probs))]
-# amp_probs = dict(zip(bitstrings, probs))
-
-# qiskit_trotter_circ.measure_all()
-
-# # 2) Pull down sample counts from the QPU and normalize
-# dispatcher = QpuDispatcher()
-# qpu_result = dispatcher.dispatch_sampler(circuits=[qiskit_trotter_circ], shots=1024)
-# qpu_counts = qpu_result[0].data.meas.get_counts()
-# sample_probs = {k: v/10000 for k, v in qpu_counts.items()}
-
-# # 3) Plot them side by side
-# plot_histogram(
-#     [amp_probs, sample_probs],
-#     legend=['Theoretical (|ψ|²)', 'Sampled'],
-#     title='H2 Trotterized Time Evolution: Statevector vs QPU Sampling'
-# )
-# plt.show()
+dists = hist(qiskit_trotter_circ, shots=10000, computer=c)
