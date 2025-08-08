@@ -57,6 +57,7 @@
 
       qiskitPythonPkgs = pkgs.lib.concatStringsSep " " [
         "qiskit"
+        "qiskit-qasm3-import"
         "qiskit-ibm-runtime"
         "qiskit-aer"
       ];

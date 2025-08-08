@@ -3,8 +3,9 @@ import qiskit.qasm3
 import numpy as np
 from qforte.helper.df_ham_helper import *
 from qforte.utils.exponentiate import exponentiate_pauli_string
-from qforte.adapters.qiskit_adapters import qforte_to_qiskit_V1, qforte_to_qiskit_V2
+from qforte.qiskit_api.translators import qforte_to_qiskit
 from qiskit.visualization import circuit_drawer
+from time_evolution_hist import hist
 #from matplotlib import pyplot as plt
 
 ##############
@@ -46,7 +47,7 @@ timer.record('Run Psi4 and Initialize')
 
 dt = 0.1  #time step
 N = 10    #num of steps
-r = 1     #trotter number
+r = 2     #trotter number
 order = 1 #trotter order
 
 ref = mol.hf_reference   #hartree fock reference state
@@ -59,6 +60,7 @@ gphase = np.exp(-1.0j*dt*mol.nuclear_repulsion_energy) #not sure why we do this?
 
 
 # print initialization params
+print("Trotter Initialization Parameters:")
 print(f"dt:    {dt}")
 print(f"r:     {r}") 
 print(f"order: {order}")
@@ -81,27 +83,13 @@ sqham = mol.sq_hamiltonian
 hermitian_pairs = qf.SQOpPool()
 hermitian_pairs.add_hermitian_pairs(1.0, sqham)
 
-# Get the 2nd quantized hamiltonian
-sqham = mol.sq_hamiltonian
-print("SQ HAM")
-print(sqham)
-print("\nQB HAM")
-print(mol.hamiltonian)
-print(mol.nuclear_repulsion_energy)
-
-# Get the hermitian pairs from the hamiltonian
-hermitian_pairs = qf.SQOpPool()
-hermitian_pairs.add_hermitian_pairs(1.0, sqham)
+#exponentiate the first term to get the global phase
+gphase2 = np.exp((-1.0j*dt)*hermitian_pairs.terms()[0][1].terms()[0][0]*2)
 
 # Initialize a circuit to hold the pauli strings and a float to hold the global phase
 trotter_circ = qf.Circuit()
 
-# FOR INITIALIZING TO HARTREE FOCK STATE (NOT NEEDED WITH COMPUTER)
-#for i in range(nel):
-#    trotter_circ.add_gate(qf.gate('X', i))  
-
 trotter_phase = 1.0
-gphase2 = np.exp((-1.0j*dt)*hermitian_pairs.terms()[0][1].terms()[0][0]*2)
 for pair in hermitian_pairs.terms():
     #unpack the pair
     coeff = pair[0]
@@ -121,7 +109,6 @@ for pair in hermitian_pairs.terms():
         #extract the phases to a single prefactor
         trotter_phase *= exp_op[1]
         
-print(trotter_circ)
     
 ######################
 # FOCK COMPUTER INIT #
@@ -173,15 +160,10 @@ for i in range(1):
         antiherm=False,
         adjoint=False)
     
-    #not sure what this does ???
-    # fc2.scale(gphase)
-
     #get the energy by taking the expectation value of the hamiltonian
-
-    E3 = np.real(c.direct_op_exp_val(mol.hamiltonian))
-
     E1 = np.real(fc1.get_exp_val(sqham))
     E2 = np.real(fc2.get_exp_val(sqham))
+    E3 = np.real(c.direct_op_exp_val(mol.hamiltonian))
 
     #get the difference between the state vectors
     C1 = fc1.get_state_deep()
@@ -191,37 +173,33 @@ for i in range(1):
     #print the energies for the taylor expansion and the trotter approximation, and the norm of the difference in the state vectors
     print(f"t {(i+1)*dt:6.6f} |dC2| {dC2.norm():6.6f} {E1:6.6f} {E2:6.6f} {E3:6.6f}")
 
+print(fc1.str(print_complex=True))
 print(fc2.str(print_complex=True))
-#print(c)
 print(c.get_coeff_vec())
-print(type(mol.hamiltonian))
 
-#######################
-# QISKIT TESTING CODE #
-#######################
+#####################
+# QISKIT CONVERSION #
+#####################
 
 # Convert the circuit to Qiskit format
-
-try: # Try both versions of the conversion
-    qiskit_trotter_circ_v1 = None
-    qiskit_trotter_circ_v2 = None
-    qiskit_trotter_circ_v1 = qforte_to_qiskit_V1(trotter_circ, nqubits)
-    qiskit_trotter_circ_v2 = qforte_to_qiskit_V2(trotter_circ, nqubits)
+try:
+    qiskit_trotter_circ = qforte_to_qiskit(trotter_circ, nqubits)
 except Exception as e:
     print(f"Error converting circuit to Qiskit: {e}")
 
-if qiskit_trotter_circ_v1:
-    print(qiskit_trotter_circ_v1.draw())
+# if qiskit_trotter_circ:
+#     print(qiskit_trotter_circ.draw())
     #draw circuit using matplotlib
     #circuit_drawer(qiskit_trotter_circ_v1, output='mpl')
     #plt.show()
-if qiskit_trotter_circ_v2: print(qiskit_trotter_circ_v2.draw())
 
-# run the resulting circuit
-
-
-qasm3_str = qiskit.qasm3.dumps(qiskit_trotter_circ_v1)
-
-# To save to a file:
+# Convert the circuit to QASM string and save it
+qasm3_str = qiskit.qasm3.dumps(qiskit_trotter_circ)
 with open("circuit.qasm3", "w") as f:
     f.write(qasm3_str)
+
+hist(qiskit_trotter_circ, shots=10000)
+
+from qiskit.quantum_info import Statevector
+state = Statevector.from_instruction(qiskit_trotter_circ)
+print(state.probabilities_dict())
