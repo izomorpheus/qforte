@@ -46,7 +46,7 @@ timer.record('Run Psi4 and Initialize')
 # INIT TIME EVOLUTION #
 #######################
 
-dt = 0.5  #time step
+dt = 0.1  #time step
 N = 10    #num of steps
 r = 1     #trotter number
 order = 1 #trotter order
