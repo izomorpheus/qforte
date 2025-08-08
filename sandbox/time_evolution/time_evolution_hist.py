@@ -76,7 +76,7 @@ def hist(circuit=None, shots=None, computer=None):
     if computer:
         coeffs = computer.get_coeff_vec()
         probs = np.abs(coeffs) ** 2
-        probs = [int(np.round(p)) for p in probs]
+        probs = [int(np.round(p) * shots) for p in probs]
         n = int(np.log2(len(probs)))
         bitstrings = [format(i, f'0{n}b') for i in range(len(probs))]
         amp_probs = dict(zip(bitstrings, probs))
