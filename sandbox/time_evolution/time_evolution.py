@@ -1,5 +1,6 @@
 import qforte as qf
 import qiskit.qasm3
+from qiskit.circuit import QuantumCircuit
 import numpy as np
 from qforte.helper.df_ham_helper import *
 from qforte.utils.exponentiate import exponentiate_pauli_string
@@ -183,23 +184,58 @@ print(c.get_coeff_vec())
 
 # Convert the circuit to Qiskit format
 try:
-    qiskit_trotter_circ = qforte_to_qiskit(trotter_circ, nqubits)
+    hartree_fock = QuantumCircuit(nqubits)
+    hartree_fock.x(0)
+    hartree_fock.x(1)
+    qiskit_trotter_circ = hartree_fock.compose(qforte_to_qiskit(trotter_circ, nqubits))
 except Exception as e:
     print(f"Error converting circuit to Qiskit: {e}")
-
-# if qiskit_trotter_circ:
-#     print(qiskit_trotter_circ.draw())
-    #draw circuit using matplotlib
-    #circuit_drawer(qiskit_trotter_circ_v1, output='mpl')
-    #plt.show()
 
 # Convert the circuit to QASM string and save it
 qasm3_str = qiskit.qasm3.dumps(qiskit_trotter_circ)
 with open("circuit.qasm3", "w") as f:
     f.write(qasm3_str)
 
-hist(qiskit_trotter_circ, shots=10000)
+hist(qiskit_trotter_circ, shots=5000, computer=c)
+print("HERE!")
+# if qiskit_trotter_circ:
+#     print(qiskit_trotter_circ.draw())
+    #draw circuit using matplotlib
+    #circuit_drawer(qiskit_trotter_circ_v1, output='mpl')
+    #plt.show()
 
-from qiskit.quantum_info import Statevector
-state = Statevector.from_instruction(qiskit_trotter_circ)
-print(state.probabilities_dict())
+# from qiskit.quantum_info import Statevector
+# state = Statevector.from_instruction(qiskit_trotter_circ)
+# print(state.probabilities_dict())
+
+# import numpy as np
+# from qforte.qiskit_api.dispatchers import QpuDispatcher
+# from qiskit.visualization import plot_histogram
+# import matplotlib.pyplot as plt
+
+# # … your existing code, ending with:
+# # state = Statevector.from_instruction(qiskit_trotter_circ)
+# # print(state.probabilities_dict())
+
+# # 1) Build theoretical distribution from qForte amplitudes
+# coeffs = c.get_coeff_vec()
+# probs = np.abs(coeffs) ** 2
+# n = int(np.log2(len(probs)))
+# bitstrings = [format(i, f'0{n}b') for i in range(len(probs))]
+# amp_probs = dict(zip(bitstrings, probs))
+
+# qiskit_trotter_circ.measure_all()
+
+# # 2) Pull down sample counts from the QPU and normalize
+# dispatcher = QpuDispatcher()
+# qpu_result = dispatcher.dispatch_sampler(circuits=[qiskit_trotter_circ], shots=1024)
+# qpu_counts = qpu_result[0].data.meas.get_counts()
+# sample_probs = {k: v/10000 for k, v in qpu_counts.items()}
+
+# # 3) Plot them side by side
+# plot_histogram(
+#     [amp_probs, sample_probs],
+#     legend=['Theoretical (|ψ|²)', 'Sampled'],
+#     title='H2 Trotterized Time Evolution: Statevector vs QPU Sampling'
+# )
+# plt.show()

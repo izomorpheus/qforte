@@ -4,6 +4,7 @@ from qiskit_aer import StatevectorSimulator
 from qiskit.visualization import plot_histogram
 from qiskit_ibm_runtime.fake_provider import FakeBrisbane
 from matplotlib import pyplot as plt
+import numpy as np
 import os
 import pickle
 
@@ -19,7 +20,7 @@ def get_or_cache(name, dispatcher, circuits, **kwargs):
     return result
 
 
-def hist(circuit=None, shots=None):
+def hist(circuit=None, shots=None, computer=None):
 
     if not circuit:
     # Load the time evolution circuit from a QASM file
@@ -33,9 +34,9 @@ def hist(circuit=None, shots=None):
     qc.measure_all()
 
     # Create dispatchers for QPU and Aer
-    qpu_dispatcher = QpuDispatcher()
+    qpu_dispatcher = QpuDispatcher("ibm_brisbane")
     aer_dispatcher = AerDispatcher()
-    aer_statevector_simulator = Dispatcher(StatevectorSimulator())
+    # aer_statevector_simulator = Dispatcher(StatevectorSimulator())
     fake_dispatcher = Dispatcher(FakeBrisbane())
 
 
@@ -45,7 +46,7 @@ def hist(circuit=None, shots=None):
     # Dispatch the circuits using Aer (cached)
     aer_result = get_or_cache("aer", aer_dispatcher, circuits=[qc], shots=shots)
 
-    aer_statevector_simulator_result = get_or_cache("aer_statevector", aer_statevector_simulator, circuits=[qc], shots=shots)
+    # aer_statevector_simulator_result = get_or_cache("aer_statevector", aer_statevector_simulator, circuits=[qc], shots=shots)
 
     fake_dispatcher_result = get_or_cache("fake", fake_dispatcher, circuits=[qc], shots=shots)
 
@@ -56,18 +57,43 @@ def hist(circuit=None, shots=None):
     aer_counts = aer_result[0].data.meas.get_counts()
 
     # Extract data from the Aer statevector simulator results
-    aer_statevector_counts = aer_statevector_simulator_result[0].data.meas.get_counts()
-    fake_sherbrooke_counts = fake_dispatcher_result[0].data.meas.get_counts()
+    # aer_statevector_counts = aer_statevector_simulator_result[0].data.meas.get_counts()
+    fake_brisbane_counts = fake_dispatcher_result[0].data.meas.get_counts()
 
     # plot the qpu results
-    plot_histogram(qpu_counts, title="Single Qubit Circuit Counts")
+    # plot_histogram(qpu_counts, title="Single Qubit Circuit Counts")
 
-    # Plot the aer results
-    plot_histogram(aer_counts, title="Aer Single Qubit Circuit Counts")
+    # # Plot the aer results
+    # plot_histogram(aer_counts, title="Aer Single Qubit Circuit Counts")
 
-    # Plot the aer statevector simulator results
-    plot_histogram(aer_statevector_counts, title="Aer Statevector Single Qubit Circuit Counts")
+    # # Plot the aer statevector simulator results
+    # plot_histogram(aer_statevector_counts, title="Aer Statevector Single Qubit Circuit Counts")
 
-    plot_histogram(fake_sherbrooke_counts, title="Fake Sherbrooke Single Qubit Circuit Counts")
+    # plot_histogram(fake_sherbrooke_counts, title="Fake Sherbrooke Single Qubit Circuit Counts")
+    q_legend = ['QPU', 'Aer Simulator', 'Fake Brisbane']
+    q_dists = [qpu_counts, aer_counts, fake_brisbane_counts]
 
+    if computer:
+        coeffs = computer.get_coeff_vec()
+        probs = np.abs(coeffs) ** 2
+        probs = [float(p) for p in probs]
+        n = int(np.log2(len(probs)))
+        bitstrings = [format(i, f'0{n}b') for i in range(len(probs))]
+        amp_probs = dict(zip(bitstrings, probs))
+        c_legend = ['QForte Simulator']
+        c_dist = [amp_probs]
+        legend = c_legend + q_legend
+        dists = c_dist + q_dists
+        print(dists)
+    else:
+        legend = q_legend
+        dists = q_dists
+
+
+    print("HERE!")
+    ax = plot_histogram(q_dists,
+                       title="Trotterized Time Evolution: H2",
+                       legend=q_legend)
+    print("THERE!")
     plt.show()
+
