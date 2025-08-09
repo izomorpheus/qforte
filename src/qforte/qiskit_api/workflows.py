@@ -197,7 +197,6 @@ class SamplerHistFlow:
             c_dist = [amp_probs]
             legend = q_legend + c_legend
             dists = q_dists + c_dist
-            print(dists)
         else:
             legend = q_legend
             dists = q_dists
