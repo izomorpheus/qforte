@@ -5,8 +5,8 @@ from qforte.evolution.trotter import trotter_evolve, hartree_fock
 
 geom = [
     ('H', (0., 0., 1.0)), 
-    ('H', (0., 0., 2.0)),
-     ]
+    ('H', (0., 0., 2.0))
+    ]
 
 mol = system_factory(
     build_type='psi4',
