@@ -95,7 +95,7 @@ def hist(circuit=None, shots=None, computer=None):
                        legend=legend,
                        figsize=(10, 6),
                        bar_labels=False)
-    plt.savefig("trotter_hist.png", dpi=300, bbox_inches='tight')
+    plt.savefig("data/trotter_hist.png", dpi=300, bbox_inches='tight')
     plt.show()
     return dists
 
