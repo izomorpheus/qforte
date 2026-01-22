@@ -1,0 +1,7 @@
+{
+  "venvPath": "/home/carterspreen/local/miniconda/envs/",
+  "venv": "qforte-default-env",
+  "pythonVersion": "3.8",
+  "typeCheckingMode": "basic",
+  "include": ["."]
+}
